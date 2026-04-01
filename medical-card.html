@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Медична картка — Іван Петренко</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --dark:    #0f1923;
+    --mid:     #1e2d3d;
+    --accent:  #1a3a5c;
+    --blue:    #2563a8;
+    --light:   #e8edf2;
+    --muted:   #7a8a9a;
+    --white:   #ffffff;
+    --red:     #c0392b;
+    --red-bg:  #fdf0ee;
+    --border:  #d0dae3;
+    --row-alt: #f4f7fa;
+    --green:   #1a7a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #dce4ed;
+    color: var(--dark);
+    font-size: 15px;
+    line-height: 1.55;
+    min-height: 100vh;
+    padding: 20px 12px 40px;
+  }
+
+  .card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  }
+
+  /* ── HEADER ── */
+  .card-header {
+    background: var(--dark);
+    padding: 28px 28px 22px;
+    position: relative;
+  }
+  .card-header .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.3px;
+  }
+  .card-header .subtitle {
+    font-size: 12px;
+    color: #5a7a9a;
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+  }
+  .card-header .updated {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #3a5a7a;
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* ── EMERGENCY ── */
+  .emergency {
+    background: var(--red-bg);
+    border-left: 4px solid var(--red);
+    padding: 16px 20px;
+    margin: 0;
+  }
+  .emergency .em-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .em-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+  .em-item { display: flex; flex-direction: column; gap: 2px; }
+  .em-item .em-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .em-item a, .em-item .em-val {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--red);
+    text-decoration: none;
+  }
+  .em-item a:hover { text-decoration: underline; }
+  .em-item .em-val { color: var(--dark); }
+
+  /* ── SECTIONS ── */
+  .section {
+    border-top: 1px solid var(--border);
+  }
+  .section-header {
+    background: var(--accent);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-header .s-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #4a7aaa;
+    min-width: 20px;
+  }
+  .section-header h2 {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .section-header .s-sub {
+    font-size: 11px;
+    color: #4a7aaa;
+    margin-left: auto;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+
+  .section-body { padding: 4px 0; }
+
+  /* ── ROWS ── */
+  .row {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    min-height: 40px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:nth-child(even) { background: var(--row-alt); }
+  .row .lbl {
+    padding: 11px 14px 11px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--border);
+  }
+  .row .val {
+    padding: 11px 20px 11px 16px;
+    font-size: 14px;
+    color: var(--dark);
+    display: flex;
+    align-items: center;
+    word-break: break-word;
+  }
+  .row .val a {
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .row .val a:hover { text-decoration: underline; }
+  .row .val.empty { color: #bbb; font-style: italic; font-size: 13px; }
+
+  /* blood type highlight */
+  .blood-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .blood-badge .bt {
+    background: var(--dark);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+  }
+  .blood-badge .rh {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+  }
+
+  /* ── LIST SECTIONS (allergies, conditions, meds etc) ── */
+  .list-section { padding: 6px 0; }
+  .list-item {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    border-bottom: 1px solid var(--border);
+    min-height: 40px;
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-item:nth-child(even) { background: var(--row-alt); }
+  .list-item .li-num {
+    padding: 11px 0 11px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+  }
+  .list-item .li-content {
+    padding: 11px 20px 11px 8px;
+    display: grid;
+    gap: 2px;
+  }
+  .li-main { font-size: 14px; color: var(--dark); font-weight: 500; }
+  .li-sub  { font-size: 12px; color: var(--muted); }
+  .li-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .badge-high   { background: #fde8e8; color: var(--red); }
+  .badge-medium { background: #fff3cd; color: #7a5a00; }
+  .badge-low    { background: #e8f5e9; color: var(--green); }
+
+  /* ── FOOTER ── */
+  .card-footer {
+    background: var(--mid);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .card-footer .f-note {
+    font-size: 11px;
+    color: #4a6a8a;
+    letter-spacing: 0.5px;
+  }
+  .card-footer .f-ver {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #3a5a7a;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 0 0 30px; }
+    .card { border-radius: 0; box-shadow: none; }
+    .card-header { padding: 20px 16px 16px; }
+    .card-header .updated { position: static; margin-top: 10px; text-align: left; }
+    .card-header h1 { font-size: 18px; }
+    .row { grid-template-columns: 120px 1fr; }
+    .row .lbl { padding: 10px 10px 10px 16px; font-size: 10px; }
+    .row .val  { padding: 10px 16px 10px 12px; }
+    .em-grid { grid-template-columns: 1fr; }
+    .section-header h2 { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="card-header">
+    <div class="tag">Medical Profile · Медична картка</div>
+    <h1>Іван Олексійович Петренко</h1>
+    <div class="subtitle">Показати медичному персоналу в екстреній ситуації · Show to medical staff in emergency</div>
+    <div class="updated">Оновлено<br>01.04.2026</div>
+  </div>
+
+  <!-- EMERGENCY -->
+  <div class="emergency">
+    <div class="em-title">🆘 Екстрені контакти · Emergency Contacts</div>
+    <div class="em-grid">
+      <div class="em-item">
+        <span class="em-label">Швидка · Ambulance</span>
+        <a href="tel:103">103</a>
+      </div>
+      <div class="em-item">
+        <span class="em-label">Екстрений · Emergency</span>
+        <a href="tel:112">112</a>
+      </div>
+      <div class="em-item">
+        <span class="em-label">ICE Контакт 1 · Дружина</span>
+        <a href="tel:+380971234567">+38 097 123-45-67</a>
+      </div>
+      <div class="em-item">
+        <span class="em-label">ICE Контакт 2 · Донька</span>
+        <a href="tel:+380631234567">+38 063 123-45-67</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. ОСОБИСТІ ДАНІ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">01</span>
+      <h2>Особисті дані</h2>
+      <span class="s-sub">Personal Data</span>
+    </div>
+    <div class="section-body">
+      <div class="row"><span class="lbl">ПІБ</span><span class="val">Петренко Іван Олексійович</span></div>
+      <div class="row"><span class="lbl">Дата нар.</span><span class="val">15.03.1975</span></div>
+      <div class="row"><span class="lbl">Стать</span><span class="val">Чоловіча</span></div>
+      <div class="row"><span class="lbl">Адреса</span><span class="val">м. Київ, вул. Хрещатик 1, кв. 10</span></div>
+      <div class="row"><span class="lbl">Телефон</span><span class="val"><a href="tel:+380971234567">+38 097 123-45-67</a></span></div>
+      <div class="row"><span class="lbl">Email</span><span class="val"><a href="mailto:ivan@example.com">ivan@example.com</a></span></div>
+    </div>
+  </div>
+
+  <!-- 2. ГРУПА КРОВІ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">02</span>
+      <h2>Група крові</h2>
+      <span class="s-sub">Blood Type</span>
+    </div>
+    <div class="section-body">
+      <div class="row">
+        <span class="lbl">Група / Rh</span>
+        <span class="val">
+          <span class="blood-badge">
+            <span class="bt">A(II)</span>
+            <span class="rh">Rh+</span>
+          </span>
+        </span>
+      </div>
+      <div class="row"><span class="lbl">Донор</span><span class="val">Так · Yes</span></div>
+      <div class="row"><span class="lbl">Доп. інфо</span><span class="val empty">—</span></div>
+    </div>
+  </div>
+
+  <!-- 3. АЛЕРГІЇ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">03</span>
+      <h2>Алергії</h2>
+      <span class="s-sub">Allergies</span>
+    </div>
+    <div class="list-section">
+      <div class="list-item">
+        <span class="li-num">1</span>
+        <div class="li-content">
+          <span class="li-main">Пеніцилін <span class="li-badge badge-high">Висока · High</span></span>
+          <span class="li-sub">Реакція: анафілаксія · Reaction: anaphylaxis</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">2</span>
+        <div class="li-content">
+          <span class="li-main">Пилок берези <span class="li-badge badge-medium">Середня · Medium</span></span>
+          <span class="li-sub">Реакція: риніт, сльозотеча</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">3</span>
+        <div class="li-content">
+          <span class="li-main">Аспірин <span class="li-badge badge-high">Висока · High</span></span>
+          <span class="li-sub">Реакція: набряк, кропив'янка</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ХРОНІЧНІ ЗАХВОРЮВАННЯ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">04</span>
+      <h2>Хронічні захворювання</h2>
+      <span class="s-sub">Chronic Conditions</span>
+    </div>
+    <div class="list-section">
+      <div class="list-item">
+        <span class="li-num">1</span>
+        <div class="li-content">
+          <span class="li-main">Гіпертонічна хвороба II ст.</span>
+          <span class="li-sub">З 2018 · Лікар: кард. Коваленко В.М.</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">2</span>
+        <div class="li-content">
+          <span class="li-main">Цукровий діабет 2 типу</span>
+          <span class="li-sub">З 2021 · Лікар: ендокр. Мельник О.І.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ЛІКИ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">05</span>
+      <h2>Поточні ліки</h2>
+      <span class="s-sub">Current Medications</span>
+    </div>
+    <div class="list-section">
+      <div class="list-item">
+        <span class="li-num">1</span>
+        <div class="li-content">
+          <span class="li-main">Лізиноприл</span>
+          <span class="li-sub">10 мг · 1 раз на день (вранці) · Призн.: Коваленко</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">2</span>
+        <div class="li-content">
+          <span class="li-main">Метформін</span>
+          <span class="li-sub">500 мг · 2 рази на день · Призн.: Мельник</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">3</span>
+        <div class="li-content">
+          <span class="li-main">Аторвастатин</span>
+          <span class="li-sub">20 мг · 1 раз на день (ввечері) · Призн.: Коваленко</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ОПЕРАЦІЇ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">06</span>
+      <h2>Операції та процедури</h2>
+      <span class="s-sub">Surgeries & Procedures</span>
+    </div>
+    <div class="list-section">
+      <div class="list-item">
+        <span class="li-num">1</span>
+        <div class="li-content">
+          <span class="li-main">Апендектомія</span>
+          <span class="li-sub">2005 · Київська міська лікарня №6</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">2</span>
+        <div class="li-content">
+          <span class="li-main">Артроскопія коліна (ліве)</span>
+          <span class="li-sub">2019 · Клініка «Борис»</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. ВАКЦИНАЦІЇ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">07</span>
+      <h2>Вакцинації</h2>
+      <span class="s-sub">Vaccinations</span>
+    </div>
+    <div class="list-section">
+      <div class="list-item">
+        <span class="li-num">1</span>
+        <div class="li-content">
+          <span class="li-main">COVID-19 — Comirnaty (Pfizer)</span>
+          <span class="li-sub">Доза 1: 05.06.2021 · Доза 2: 01.07.2021 · Бустер: 15.01.2022</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">2</span>
+        <div class="li-content">
+          <span class="li-main">Грип · Influenza</span>
+          <span class="li-sub">Остання: жовтень 2025 · Наступна: жовтень 2026</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">3</span>
+        <div class="li-content">
+          <span class="li-main">Правець / Дифтерія · Td</span>
+          <span class="li-sub">2020 · Наступна: 2030</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. ЛІКАРІ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">08</span>
+      <h2>Лікарі та контакти</h2>
+      <span class="s-sub">Doctors & Contacts</span>
+    </div>
+    <div class="list-section">
+      <div class="list-item">
+        <span class="li-num">1</span>
+        <div class="li-content">
+          <span class="li-main">Шевченко Тетяна Іванівна · Сімейний лікар</span>
+          <span class="li-sub"><a href="tel:+380441234567">+38 044 123-45-67</a> · Поліклініка №5, каб. 210</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">2</span>
+        <div class="li-content">
+          <span class="li-main">Коваленко Василь Миколайович · Кардіолог</span>
+          <span class="li-sub"><a href="tel:+380671234567">+38 067 123-45-67</a> · Клініка «Серце», каб. 305</span>
+        </div>
+      </div>
+      <div class="list-item">
+        <span class="li-num">3</span>
+        <div class="li-content">
+          <span class="li-main">Мельник Оксана Іванівна · Ендокринолог</span>
+          <span class="li-sub"><a href="tel:+380501234567">+38 050 123-45-67</a> · МЦ «Добробут»</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. СТРАХОВКА -->
+  <div class="section">
+    <div class="section-header">
+      <span class="s-num">09</span>
+      <h2>Страховка</h2>
+      <span class="s-sub">Insurance</span>
+    </div>
+    <div class="section-body">
+      <div class="row"><span class="lbl">Страховик</span><span class="val">УНІКА Україна</span></div>
+      <div class="row"><span class="lbl">Поліс №</span><span class="val" style="font-family:'IBM Plex Mono',monospace;font-size:13px;">UA-2025-0012345</span></div>
+      <div class="row"><span class="lbl">Телефон</span><span class="val"><a href="tel:+380800123456">0800 123 456</a></span></div>
+      <div class="row"><span class="lbl">Дійсний до</span><span class="val">31.12.2026</span></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="card-footer">
+    <span class="f-note">Конфіденційна медична інформація · Confidential Medical Information</span>
+    <span class="f-ver">v1.0 · 2026-04-01</span>
+  </div>
+
+</div>
+</body>
+</html>
